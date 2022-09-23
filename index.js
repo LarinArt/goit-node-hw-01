@@ -1,4 +1,4 @@
-const contactOperations = require("./contacts.js").default;
+const contactOperations = require("./contacts.js");
 const { Command } = require("commander");
 
 const program = new Command();
@@ -13,39 +13,27 @@ program.parse(process.argv);
 
 const argv = program.opts();
 
-(async () =>
-  async function invokeAction({ action, id, name, email, phone }) {
-    switch (action) {
-      case "list":
-        const contacts = await contactOperations.listContacts();
-        console.table(contacts);
-        break;
+const invokeAction = async ({ action, id, name, email, phone }) => {
+  switch (action) {
+    case "list":
+      const contactsList = await contactOperations.getContactsList();
+      console.table(contactsList);
+      break;
+    case "get":
+      const contact = await contactOperations.getContactById(id);
+      console.log(contact);
+      break;
+    case "add":
+      const newContact = await contactOperations.addContact(name, email, phone);
+      console.log(newContact);
+      break;
+    case "remove":
+      const removedContact = await contactOperations.removeContact(id);
+      console.log(removedContact);
+      break;
+    default:
+      console.warn("\x1B[31m Unknown action type!");
+  }
+};
 
-      case "get":
-        const contact = await contactOperations.getContactById(id);
-
-        if (!contact) {
-          throw new Error(`Contact with id - ${id}, not found.`);
-        }
-
-        console.log(contact);
-        break;
-
-      case "add":
-        const newContact = await contactOperations.addContact(
-          name,
-          email,
-          phone
-        );
-        console.log(newContact);
-        break;
-
-      case "remove":
-        const removeContact = await contactOperations.removeContact(id);
-        console.log(removeContact);
-        break;
-
-      default:
-        console.warn("\x1B[31m Unknown action type!");
-    }
-  })();
+invokeAction(argv);
